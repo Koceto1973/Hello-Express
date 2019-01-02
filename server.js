@@ -1,46 +1,62 @@
 const express = require('express')
+const port = 3000;
+const app = express();
+
 const hbs = require('hbs');
 
-const app = express()
-const port = 3000
-
-// middleware example with static assets ( no modified res based on req )
+// middleware example with static routes ( no modified res based on req )
 app.use(express.static(__dirname + '/staticAssets')); // if route is here, send it as a response
 
-// adding partials support in hbs, injecting hbs templates in hbs
+// middleware, example catching all non-static routes 
+// app.use((req, res, next) => {
+//   res.render('maintenance.hbs');  // no data injection here
+// });
+
 hbs.registerPartials(__dirname + '/views/partials')
-// app view engine set up to hbs
-app.set('view engine', 'hbs'); 
 
-// rendering of specified template by injecting content in it
-// provide handlebars into the template first
+hbs.registerHelper('getCurrentYear', () => {
+  return new Date().getFullYear();
+});
+
+hbs.registerHelper('screamIt', (text) => {
+  return text.toUpperCase();
+});
+
+app.get('/', (req, res) => {
+  res.render('home.hbs', {
+    pageTitle: 'Home Page',
+    welcomeMessage: 'Welcome to my website'
+  });
+});
+
 app.get('/about', (req, res) => {
-    res.render('about.hbs', {
-      headerPartialText: 'About Page',
-      footerPartialText: new Date().getFullYear()
-    });
+  res.render('about.hbs', {
+    pageTitle: 'About Page'
   });
+});
 
-// rendering of specified template by injecting content in it from partial template
-// provide handlebars into the template first
-app.get('/home', (req, res) => {
-    res.render('home.hbs', {
-      getcurrentYear: new Date().getFullYear()
-    });
+app.get('/projects', (req, res) => {
+  res.render('projects.hbs', {
+    pageTitle: 'Projects'
   });
+});
 
-// response sent as html, express takes care of other  response elements
-app.get('/', (req, res) => res.send('<h1>Hello Express!</h1>'));
+// unknown route sends back json with errorMessage
+app.use((req, res, next) => {
+  res.send({
+    errorMessage: 'Unable to handle request'
+  });
+});
 
 // response sent as json, express takes care of other  response elements
-// adding routes 
-app.get('/detail', (req, res) => {
-    res.send({
-        name:"TeamK",
-        likes:5,
-        location:'BG'
-    })
-});
+// specific route and req, specific res 
+// app.get('/detail', (req, res) => {
+//     res.send({
+//         name:"TeamK",
+//         likes:5,
+//         location:'BG'
+//     })
+// });
 
 
 // listener set up
