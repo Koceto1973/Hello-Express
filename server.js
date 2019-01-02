@@ -1,11 +1,33 @@
 const express = require('express')
+const hbs = require('hbs');
+
 const app = express()
 const port = 3000
 
-// middleware example, static assets are just that, they will always be the same between requests,
-// looks in the public folder for a file that matches the name of the request path (i.e. help.html). 
-// If it finds it, then it serves that, if not then it sends the request to the route handlers.
-app.use(express.static(__dirname + '/public'));
+// middleware example with static assets ( no modified res based on req )
+app.use(express.static(__dirname + '/staticAssets')); // if route is here, send it as a response
+
+// adding partials support in hbs, injecting hbs templates in hbs
+hbs.registerPartials(__dirname + '/views/partials')
+// app view engine set up to hbs
+app.set('view engine', 'hbs'); 
+
+// rendering of specified template by injecting content in it
+// provide handlebars into the template first
+app.get('/about', (req, res) => {
+    res.render('about.hbs', {
+      headerPartialText: 'About Page',
+      footerPartialText: new Date().getFullYear()
+    });
+  });
+
+// rendering of specified template by injecting content in it from partial template
+// provide handlebars into the template first
+app.get('/home', (req, res) => {
+    res.render('home.hbs', {
+      getcurrentYear: new Date().getFullYear()
+    });
+  });
 
 // response sent as html, express takes care of other  response elements
 app.get('/', (req, res) => res.send('<h1>Hello Express!</h1>'));
